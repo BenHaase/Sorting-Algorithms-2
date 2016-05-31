@@ -1,0 +1,349 @@
+Script started on Sat Oct 24 19:43:50 2015
+admiral% cat bjh2A.cpp
+// Ben Haase
+// 10/24/15
+// CS3130 project 2 part A
+// implementation of sorting algorithms on array of 100 random ints
+// run time of sorting algorithms
+
+#include <iostream>
+#include <cstdlib>
+#include <ctime>
+#include <time.h>
+
+using namespace std;
+
+void mergeSort(int *, int, int);
+void merge(int *, int, int, int);
+int * mergeArrays(int *, int *, int, int);
+int floor(int);
+int * randomArrGen(int);
+void viewArray(int *, int);
+int * copyArray(int *, int s);
+void resetArr(int ***, int ***, int *);
+int * appendArray(int *, int *, int, int);
+void run100();
+void avgRunTime();
+int main(int argc, char * argv[])
+{
+        srand(time(NULL));
+        run100();
+        avgRunTime();
+
+        return 0;
+}
+
+//merge sort function
+void mergeSort(int * A, int p, int r){
+        int q = 0;
+        if (p < r){
+                q = floor(p + r);
+                mergeSort(A, p, q);
+                mergeSort(A, q + 1, r);
+                merge(A, p, q, r);
+        }
+
+}
+
+//merge function
+void merge(int * A, int p, int q, int r){
+        int n1 = q - p + 1;
+        int n2 = r - q;
+        int * L = new int[n1 + 1];
+        int * R = new int[n2 + 1];
+        for (int i = 0; i < n1; i++){
+                L[i] = A[p + i];
+        }
+        for (int i = 0; i < n2; i++){
+                R[i] = A[q + i + 1];
+        }
+        L[n1] = 100000;
+        R[n2] = 100000;
+        int ir = 0;
+        int il = 0;
+        for (int i = p; i < r + 1; i++){
+                if (L[il] <= R[ir]){
+                        A[i] = L[il];
+                        il++;
+                }
+                else{
+                        A[i] = R[ir];
+                        ir++;
+                }
+        }
+        delete[] L, R;
+}
+
+//function to take in two arrays and merge them into one
+int * mergeArrays(int * L, int * R, int nl, int nr){
+        int * A = new int[nl + nr];
+        int ir = 0;
+        int il = 0;
+        for (int i = 0; i < (nl + nr); i++){
+                if ((il < nl) && (ir < nr)){
+                        if (L[il] <= R[ir]){
+                                A[i] = L[il];
+                                il++;
+                        }
+                        else{
+                                A[i] = R[ir];
+                                ir++;
+                        }
+                }
+                else if (il < nl){
+                        A[i] = L[il];
+                        il++;
+                }
+                else{
+                        A[i] = R[ir];
+                        ir++;
+                }
+        }
+        return A;
+}
+
+//floor function
+int floor(int a){
+        if (a % 2 == 0) return a / 2;
+        else return (a - 1) / 2;
+}
+
+//function to generate an array of random numbers
+int * randomArrGen(int s){
+        int * a = new int[s];
+        for (int i = 0; i < s; i++){
+                a[i] = rand() % 9000 + 1000;
+        }
+        return a;
+}
+
+//function to print an array
+void viewArray(int * a, int s){
+        for (int i = 0; i < s; i++){
+                if (i % 10 == 0 && i>0) cout << endl;
+                cout << a[i] << " ";
+        }
+        cout << endl << endl;
+}
+
+//function to copy an array
+int * copyArray(int * a, int s){
+        int * b = new int[s];
+        for (int i = 0; i < s; i++) b[i] = a[i];
+        return b;
+}
+
+//function to reset sorted array to original unsorted array
+void resetArr(int *** a, int *** b, int * s){
+        for (int i = 0; i < 3; i++){
+                for (int j = 0; j < 10; j++){
+                        delete[] b[i][j];
+                        b[i][j] = copyArray(a[i][j], s[i]);
+                }
+        }
+}
+
+//function to append array b to array a
+int * appendArray(int * a, int * b, int na, int nb){
+        int * c = new int[na + nb];
+        for (int i = 0; i < na; i++) c[i] = a[i];
+        for (int i = 0; i < nb; i++) c[i + na] = b[i];
+        return c;
+}
+
+//function to run sorting algorithm for an array of 100 random ints
+void run100(){
+        int n = 100;
+        int m = 10;
+        int p = 0;
+        int r = n - 1;
+        int mr = m - 1;
+        int * a = randomArrGen(n);
+        int * b = randomArrGen(m);
+        cout << "Original Arrays" << endl;
+        viewArray(a, n);
+        viewArray(b, m);
+        mergeSort(a, p, r);
+        cout << "Merge Sort" << endl;
+        viewArray(a, n);
+        mergeSort(b, p, mr);
+        viewArray(b, m);
+        int * c = mergeArrays(a, b, n, m);
+        cout << "Merged" << endl;
+        viewArray(c, n + m);
+        cout << endl;
+}
+
+//function to measure the runtime of sorting algorithm for various input sizes
+void avgRunTime(){
+        clock_t start;
+        clock_t end;
+        double elapsed;
+        int p = 0;
+        int * t;
+        int n[] = { 1000, 10000, 100000};
+        int m[] = { 25, 50, 100};
+        int *** na = new int **[3];
+        int *** ma = new int **[3];
+        int *** nb = new int **[3];
+        int *** mb = new int **[3];
+        double ** at = new double *[3];
+        double ** ats = new double *[3];
+        for (int i = 0; i < 3; i++){
+                at[i] = new double[3];
+                ats[i] = new double[3];
+                for (int j = 0; j < 3; j++){
+                        at[i][j] = 0;
+                        ats[i][j] = 0;
+                }
+        }
+        for (int i = 0; i < 3; i++){
+                na[i] = new int *[10];
+                ma[i] = new int *[10];
+                nb[i] = new int *[10];
+                mb[i] = new int *[10];
+                for (int j = 0; j < 10; j++){
+                                na[i][j] = randomArrGen(n[i]);
+                                ma[i][j] = randomArrGen(m[i]);
+                                nb[i][j] = copyArray(na[i][j], n[i]);
+                                mb[i][j] = copyArray(ma[i][j], m[i]);
+                }
+        }
+        
+        //merging two arrays
+        for (int i = 0; i < 3; i++){
+                for (int j = 0; j < 3; j++){
+                        for (int k = 0; k < 10; k++){
+                                start = clock();
+                                mergeSort(nb[i][k], p, n[i] - 1);
+                                mergeSort(mb[j][k], p, m[j] - 1);
+                                t = mergeArrays(nb[i][k], mb[j][k], n[i], m[i]);
+                                end = clock();
+                                elapsed = double(end - start) / CLOCKS_PER_SEC;
+                                at[i][j] = at[i][j] + elapsed;
+                                delete[] t;
+                        }
+                        at[i][j] = at[i][j] / 10;
+                        resetArr(na, nb, n);
+                }
+                resetArr(ma, mb, m);
+        }
+
+        cout << "MergeSort (merge two arrays)" << endl;
+        for (int i = 0; i < 3; i++){
+                cout << "N = " << n[i] << ":" << endl;
+                for (int j = 0; j < 3; j++){
+                        cout << "    " << "M = ";
+                        if (m[j] == 25 || m[j] == 50) cout << " ";
+                        cout << m[j];
+                        cout << ": " << at[i][j] << endl;
+                }
+        }
+        cout << endl;
+
+        //resorting
+        for (int i = 0; i < 3; i++){
+                for (int j = 0; j < 3; j++){
+                        for (int k = 0; k < 10; k++){
+                                start = clock();
+                                mergeSort(nb[i][k], p, n[i] - 1);
+                                mergeSort(mb[j][k], p, m[j] - 1);
+                                t = appendArray(nb[i][k], mb[j][k], n[i], m[j]);
+                                mergeSort(t, p, n[i] + m[j] - 1);
+                                end = clock();
+                                elapsed = double(end - start) / CLOCKS_PER_SEC;
+                                ats[i][j] = ats[i][j] + elapsed;
+                                delete[] t;
+                        }
+                        ats[i][j] = ats[i][j] / 10;
+                        resetArr(na, nb, n);
+                }
+                resetArr(ma, mb, m);
+        }
+
+        cout << "MergeSort (resorting)" << endl;
+        for (int i = 0; i < 3; i++){
+                cout << "N = " << n[i] << ":" << endl;
+                for (int j = 0; j < 3; j++){
+                        cout << "    " << "M = ";
+                        if (m[j] == 25 || m[j] == 50) cout << " ";
+                        cout << m[j];
+                        cout << ": " << ats[i][j] << endl;
+                }
+        }
+}
+admiral% make -f bjh2A.mak
+g++ -c bjh2A.cpp
+g++ -o bjh2A bjh2A.o
+admiral% bjh2A
+Original Arrays
+6100 1591 1349 3652 4846 6233 5641 4936 9813 4389 
+2025 1661 2880 4024 2162 6271 4663 2032 8129 1244 
+3904 6731 6655 9244 1737 4538 2837 6922 5137 2794 
+8807 3876 2116 2638 6610 7426 1514 3847 8205 1296 
+5639 9558 2482 5027 2544 8655 2193 8525 5170 2702 
+4480 1312 2851 1470 1252 5853 5173 9845 3118 6090 
+3766 3537 1511 4821 5249 9865 6233 9203 8897 9260 
+6003 9550 9123 8898 3282 2474 8689 5051 2607 9999 
+7158 3483 8381 2404 4493 9235 3423 5255 4144 6766 
+5323 8079 2241 1009 1585 7749 7690 4143 1818 2751 
+
+7092 5455 9609 5747 6058 3343 8082 2555 5684 3476 
+
+Merge Sort
+1009 1244 1252 1296 1312 1349 1470 1511 1514 1585 
+1591 1661 1737 1818 2025 2032 2116 2162 2193 2241 
+2404 2474 2482 2544 2607 2638 2702 2751 2794 2837 
+2851 2880 3118 3282 3423 3483 3537 3652 3766 3847 
+3876 3904 4024 4143 4144 4389 4480 4493 4538 4663 
+4821 4846 4936 5027 5051 5137 5170 5173 5249 5255 
+5323 5639 5641 5853 6003 6090 6100 6233 6233 6271 
+6610 6655 6731 6766 6922 7158 7426 7690 7749 8079 
+8129 8205 8381 8525 8655 8689 8807 8897 8898 9123 
+9203 9235 9244 9260 9550 9558 9813 9845 9865 9999 
+
+2555 3343 3476 5455 5684 5747 6058 7092 8082 9609 
+
+Merged
+1009 1244 1252 1296 1312 1349 1470 1511 1514 1585 
+1591 1661 1737 1818 2025 2032 2116 2162 2193 2241 
+2404 2474 2482 2544 2555 2607 2638 2702 2751 2794 
+2837 2851 2880 3118 3282 3343 3423 3476 3483 3537 
+3652 3766 3847 3876 3904 4024 4143 4144 4389 4480 
+4493 4538 4663 4821 4846 4936 5027 5051 5137 5170 
+5173 5249 5255 5323 5455 5639 5641 5684 5747 5853 
+6003 6058 6090 6100 6233 6233 6271 6610 6655 6731 
+6766 6922 7092 7158 7426 7690 7749 8079 8082 8129 
+8205 8381 8525 8655 8689 8807 8897 8898 9123 9203 
+9235 9244 9260 9550 9558 9609 9813 9845 9865 9999 
+
+
+MergeSort (merge two arrays)
+N = 1000:
+    M =  25: 0.002
+    M =  50: 0.003
+    M = 100: 0.002
+N = 10000:
+    M =  25: 0.024
+    M =  50: 0.025
+    M = 100: 0.025
+N = 100000:
+    M =  25: 0.269
+    M =  50: 0.271
+    M = 100: 0.27
+
+MergeSort (resorting)
+N = 1000:
+    M =  25: 0.004
+    M =  50: 0.004
+    M = 100: 0.005
+N = 10000:
+    M =  25: 0.049
+    M =  50: 0.048
+    M = 100: 0.048
+N = 100000:
+    M =  25: 0.534
+    M =  50: 0.533
+    M = 100: 0.533
+admiral% ^D
+script done on Sat Oct 24 19:45:06 2015
